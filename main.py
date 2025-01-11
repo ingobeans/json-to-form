@@ -20,15 +20,15 @@ template = '''<!DOCTYPE html>
 </head>
 <body>
     <h1 id="header">cool form...</h1>
-    <form id="form" method="post" action="https://example.com">
-        {text}        <button type="submit"></button>
+    <form id="form" method="post" action="https://example.com">{text}
+        <button type="submit"></button>
     </form>
     <script>
     </script>
 </body>
 </html>'''
 
-property_template = '<input name="{name}" id="{name}" type="text" value="{value}">\n'
+property_template = '\n\t<input name="{name}" id="{name}" type="text" value="{value}">'
 
 text = ""
 for key in data:
