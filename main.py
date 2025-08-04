@@ -16,7 +16,7 @@ template = '''<!DOCTYPE html>
 </body>
 </html>'''
 
-property_template = "\n\t<input name='{name}' id='{name}' type='text' value='{value}'>"
+property_template = "\n\t<input name='{name}' type='text' value='{value}'>"
 
 def convert_default(data:dict):
 
@@ -32,7 +32,7 @@ def convert_default(data:dict):
 
 # following https://dant0x65.medium.com/json-csrf-a1594955dd75
 def convert_fake_json(data:dict):
-    text = json.dumps(data)[:-1] + ',"a":'
+    text = json.dumps(data)[:-1] + ',"a":"'
     text = property_template.format(name=text,value='"}')
 
     text = template.format(text=text,enctype="text/plain")
@@ -45,7 +45,6 @@ parser.add_argument("-f","--fakejson",action="store_true")
 
 args = parser.parse_args()
 
-print(args)
 if not args.path and not args.data:
     parser.print_help()
     quit()
